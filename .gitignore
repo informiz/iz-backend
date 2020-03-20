@@ -2,6 +2,9 @@
 *.class
 target
 
+# tmp dir
+tmp
+
 # Log file
 *.log
 

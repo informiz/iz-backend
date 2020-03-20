@@ -1,0 +1,34 @@
+---
+name: first-network-org${ORG_NUM}
+version: 1.0.0
+client:
+  organization: Org${ORG_NUM}
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+organizations:
+  Org${ORG_NUM}:
+    mspid: Org${ORG_NUM}MSP
+    peers:
+    - peer0.${ORG_NAME}
+    certificateAuthorities:
+    - ca.${ORG_NAME}
+peers:
+  peer0.${ORG_NAME}:
+    url: grpcs://localhost:${P0PORT}
+    tlsCACerts:
+      pem: |
+        ${PEERPEM}
+    grpcOptions:
+      ssl-target-name-override: peer0.${ORG_NAME}
+      hostnameOverride: peer0.${ORG_NAME}
+certificateAuthorities:
+  ca.${ORG_NAME}:
+    url: https://localhost:${CAPORT}
+    caName: ca-org${ORG_NUM}
+    tlsCACerts:
+      pem: |
+        ${CAPEM}
+    httpOptions:
+      verify: false
