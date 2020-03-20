@@ -2,7 +2,9 @@
 *.class
 target
 
-# tmp dir
+# excluded folders (automatically pulled binaries and conf, tmp folder for network)
+bin
+config
 tmp
 
 # Log file
