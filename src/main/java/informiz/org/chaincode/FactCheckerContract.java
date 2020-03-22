@@ -73,6 +73,9 @@ public class FactCheckerContract implements ContractInterface {
     public FactChecker createFactChecker(final Context ctx, String name, float reliability, float confidence) {
         ChaincodeStub stub = ctx.getStub();
 
+        // TODO: authentication and authorization?
+        // ClientIdentity id = ctx.getClientIdentity(); ...
+
         FactChecker factChecker = FactChecker.createFactChecker(name, reliability, confidence);
         try {
             String fcState = mapper.writeValueAsString(factChecker);

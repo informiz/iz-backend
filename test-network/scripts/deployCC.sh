@@ -10,10 +10,8 @@ VERBOSE="$5"
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
 
-FABRIC_CFG_PATH=$PWD/../config/
-
-CC_SRC_PATH="$PWD/.."
-
+CC_SRC_PATH="$PWD/../iz-backend"
+FABRIC_CFG_PATH=$CC_SRC_PATH/config/
 
 # import utils
 . scripts/envVar.sh

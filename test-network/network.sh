@@ -10,9 +10,10 @@
 # peer each, and a single node Raft ordering service. Users can also use this
 # script to create a channel deploy a chaincode on the channel
 #
-# prepending $PWD/../bin to PATH to ensure we are picking up the correct binaries
+# prepending $PWD/../iz-backend/bin to PATH to ensure we are picking up the correct binaries
 # this may be commented out to resolve installed version of tools if desired
-export PATH=${PWD}/../bin:${PWD}:$PATH
+export PROJECT_DIR=../iz-backend
+export PATH=${PWD}/${PROJECT_DIR}/bin:${PWD}:$PATH
 export FABRIC_CFG_PATH=${PWD}/configtx
 export VERBOSE=false
 
@@ -89,7 +90,7 @@ function checkPrereqs() {
   ## Check if your have cloned the peer binaries and configuration files.
   peer version > /dev/null 2>&1
 
-  if [[ $? -ne 0 || ! -d "../config" ]]; then
+  if [[ $? -ne 0 || ! -d "$PROJECT_DIR/config" ]]; then
     echo "ERROR! Peer binary and configuration files not found.."
     echo
     echo "Follow the instructions in the Fabric docs to install the Fabric Binaries:"
@@ -218,14 +219,14 @@ function createOrgs() {
     fabric-ca-client version > /dev/null 2>&1
     if [ $? -ne 0 ]; then
       echo "Fabric CA client not found locally, downloading..."
-      cd ..
+      cd ${PROJECT_DIR}
       curl -s -L "https://github.com/hyperledger/fabric-ca/releases/download/v1.4.4/hyperledger-fabric-ca-${OS_ARCH}-1.4.4.tar.gz" | tar xz || rc=$?
     if [ -n "$rc" ]; then
         echo "==> There was an error downloading the binary file."
         echo "fabric-ca-client binary is not available to download"
     else
         echo "==> Done."
-      cd test-network
+        cd ../tmp
     fi
     fi
 
