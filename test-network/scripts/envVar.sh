@@ -10,7 +10,7 @@ export CORE_PEER_TLS_ENABLED=true
 export ORDERER_CA=${PWD}/organizations/ordererOrganizations/informiz.org/orderers/orderer.informiz.org/msp/tlscacerts/tlsca.informiz.org-cert.pem
 export PEER0_ORG1_CA=${PWD}/organizations/peerOrganizations/_ORG_NAME_/peers/peer0._ORG_NAME_/tls/ca.crt
 export PEER0_ORG2_CA=${PWD}/organizations/peerOrganizations/_FACT_CHECKERS_ORG_/peers/peer0._FACT_CHECKERS_ORG_/tls/ca.crt
-export PEER0_ORG3_CA=${PWD}/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/tls/ca.crt
+export PEER0_ORG3_CA=${PWD}/organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/tls/ca.crt
 
 # Set OrdererOrg.Admin globals
 setOrdererGlobals() {
@@ -42,7 +42,7 @@ setGlobals() {
   elif [ $USING_ORG -eq 3 ]; then
     export CORE_PEER_LOCALMSPID="Org3MSP"
     export CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG3_CA
-    export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/users/Admin@_ANOTHER_ORG_NAME_/msp
+    export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/_ANOTHER_ORG_/users/Admin@_ANOTHER_ORG_/msp
     export CORE_PEER_ADDRESS=localhost:11051
   else
     echo "================== ERROR !!! ORG Unknown =================="

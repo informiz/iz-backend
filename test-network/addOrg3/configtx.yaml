@@ -21,7 +21,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org3MSP
 
-        MSPDir: ../organizations/peerOrganizations/_ANOTHER_ORG_NAME_/msp
+        MSPDir: ../organizations/peerOrganizations/_ANOTHER_ORG_/msp
 
         Policies:
             Readers:
@@ -41,5 +41,5 @@ Organizations:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0._ANOTHER_ORG_NAME_
+            - Host: peer0._ANOTHER_ORG_
               Port: 11051

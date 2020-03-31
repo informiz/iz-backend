@@ -5,10 +5,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>informiz</groupId>
-  <artifactId>iz-backend</artifactId>
+  <artifactId>iz-chaincode</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>iz-backend</name>
+  <name>iz-chaincode</name>
   <url>http://informiz.org</url>
 
   <properties>

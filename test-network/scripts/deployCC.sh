@@ -10,7 +10,7 @@ VERBOSE="$5"
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
 
-CC_SRC_PATH="$PWD/../iz-backend"
+CC_SRC_PATH="$PWD/.."
 FABRIC_CFG_PATH=$CC_SRC_PATH/config/
 
 # import utils

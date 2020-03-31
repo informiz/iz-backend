@@ -301,16 +301,16 @@ signing:
 #     CA certificates though it can still issue end entity certificates.
 ###########################################################################
 csr:
-   cn: ca._ANOTHER_ORG_NAME_
+   cn: ca._ANOTHER_ORG_
    names:
       - C: US
         ST: "North Carolina"
         L: "Raleigh"
-        O: _ANOTHER_ORG_NAME_
+        O: _ANOTHER_ORG_
         OU:
    hosts:
      - localhost
-     - _ANOTHER_ORG_NAME_
+     - _ANOTHER_ORG_
    ca:
       expiry: 131400h
       pathlength: 1

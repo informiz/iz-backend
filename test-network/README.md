@@ -14,8 +14,8 @@ fi
 find ./tmp/ -type f \( -iname \*.yaml -o -iname \*.json -o -iname \*.sh \) -exec sed -i "s/_ORG_NAME_/$_ORG_NAME_/g" {} +
 find ./tmp/ -type f \( -iname \*.yaml -o -iname \*.json -o -iname \*.sh \) -exec sed -i "s/_FACT_CHECKERS_ORG_/$_FACT_CHECKERS_ORG_/g" {} +
 
-if [[ ! -v _ANOTHER_ORG_NAME_ ]]; then
-    find ./tmp/ -type f \( -iname \*.yaml -o -iname \*.json -o -iname \*.sh \) -exec sed -i "s/_ANOTHER_ORG_NAME_/$_ANOTHER_ORG_NAME_/g" {} +
+if [[ ! -v _ANOTHER_ORG_ ]]; then
+    find ./tmp/ -type f \( -iname \*.yaml -o -iname \*.json -o -iname \*.sh \) -exec sed -i "s/_ANOTHER_ORG_/$_ANOTHER_ORG_/g" {} +
 fi
 
 export FABRIC_CFG_PATH=$PWD/tmp/configtx/configtx.yaml

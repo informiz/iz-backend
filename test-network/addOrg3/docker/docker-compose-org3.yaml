@@ -6,15 +6,15 @@
 version: '2'
 
 volumes:
-  peer0._ANOTHER_ORG_NAME_:
+  peer0._ANOTHER_ORG_:
 
 networks:
   test:
 
 services:
 
-  peer0._ANOTHER_ORG_NAME_:
-    container_name: peer0._ANOTHER_ORG_NAME_
+  peer0._ANOTHER_ORG_:
+    container_name: peer0._ANOTHER_ORG_
     image: hyperledger/fabric-peer:$IMAGE_TAG
     environment:
       #Generic peer variables
@@ -33,19 +33,19 @@ services:
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
       # Peer specific variabes
-      - CORE_PEER_ID=peer0._ANOTHER_ORG_NAME_
-      - CORE_PEER_ADDRESS=peer0._ANOTHER_ORG_NAME_:11051
+      - CORE_PEER_ID=peer0._ANOTHER_ORG_
+      - CORE_PEER_ADDRESS=peer0._ANOTHER_ORG_:11051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:11051
-      - CORE_PEER_CHAINCODEADDRESS=peer0._ANOTHER_ORG_NAME_:11052
+      - CORE_PEER_CHAINCODEADDRESS=peer0._ANOTHER_ORG_:11052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0._ANOTHER_ORG_NAME_:11051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0._ANOTHER_ORG_NAME_:11051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0._ANOTHER_ORG_:11051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0._ANOTHER_ORG_:11051
       - CORE_PEER_LOCALMSPID=Org3MSP
     volumes:
         - /var/run/:/host/var/run/
-        - ../../organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/msp:/etc/hyperledger/fabric/msp
-        - ../../organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/tls:/etc/hyperledger/fabric/tls
-        - peer0._ANOTHER_ORG_NAME_:/var/hyperledger/production
+        - ../../organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/msp:/etc/hyperledger/fabric/msp
+        - ../../organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/tls:/etc/hyperledger/fabric/tls
+        - peer0._ANOTHER_ORG_:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     ports:
@@ -64,13 +64,13 @@ services:
       - FABRIC_LOGGING_SPEC=INFO
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=Org3cli
-      - CORE_PEER_ADDRESS=peer0._ANOTHER_ORG_NAME_:11051
+      - CORE_PEER_ADDRESS=peer0._ANOTHER_ORG_:11051
       - CORE_PEER_LOCALMSPID=Org3MSP
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/users/Admin@_ANOTHER_ORG_NAME_/msp
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_/users/Admin@_ANOTHER_ORG_/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
@@ -79,6 +79,6 @@ services:
         - ../../organizations:/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations
         - ../../scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
     depends_on:
-      - peer0._ANOTHER_ORG_NAME_
+      - peer0._ANOTHER_ORG_
     networks:
       - test

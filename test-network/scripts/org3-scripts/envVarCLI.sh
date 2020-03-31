@@ -9,7 +9,7 @@
 ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/ordererOrganizations/informiz.org/orderers/orderer.informiz.org/msp/tlscacerts/tlsca.informiz.org-cert.pem
 PEER0_ORG1_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ORG_NAME_/peers/peer0._ORG_NAME_/tls/ca.crt
 PEER0_ORG2_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_FACT_CHECKERS_ORG_/peers/peer0._FACT_CHECKERS_ORG_/tls/ca.crt
-PEER0_ORG3_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/peers/peer0._ANOTHER_ORG_NAME_/tls/ca.crt
+PEER0_ORG3_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_/peers/peer0._ANOTHER_ORG_/tls/ca.crt
 
 # Set OrdererOrg.Admin globals
 setOrdererGlobals() {
@@ -34,8 +34,8 @@ setGlobals() {
   elif [ $ORG -eq 3 ]; then
     CORE_PEER_LOCALMSPID="Org3MSP"
     CORE_PEER_TLS_ROOTCERT_FILE=$PEER0_ORG3_CA
-    CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_NAME_/users/Admin@_ANOTHER_ORG_NAME_/msp
-    CORE_PEER_ADDRESS=peer0._ANOTHER_ORG_NAME_:11051
+    CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/organizations/peerOrganizations/_ANOTHER_ORG_/users/Admin@_ANOTHER_ORG_/msp
+    CORE_PEER_ADDRESS=peer0._ANOTHER_ORG_:11051
   else
     echo "================== ERROR !!! ORG Unknown =================="
   fi
