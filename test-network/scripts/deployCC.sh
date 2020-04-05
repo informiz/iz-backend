@@ -10,8 +10,10 @@ VERBOSE="$5"
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
 
-CC_SRC_PATH="$PWD/.."
-FABRIC_CFG_PATH=$CC_SRC_PATH/config/
+# TODO: mvn clean package
+CC_SRC_PATH="../../fabric-samples/chaincode/fabcar/java/build/install/fabcar"
+# CC_SRC_PATH="../java/target/build/install/informiz"
+FABRIC_CFG_PATH="$PWD/../config"
 
 # import utils
 . scripts/envVar.sh
@@ -110,7 +112,6 @@ checkCommitReadiness() {
     echo "===================== Checking the commit readiness of the chaincode definition successful on peer0.org${ORG} on channel '$CHANNEL_NAME' ===================== "
   else
     echo "!!!!!!!!!!!!!!! After $MAX_RETRY attempts, Check commit readiness result on peer0.org${ORG} is INVALID !!!!!!!!!!!!!!!!"
-    echo "================== ERROR !!! FAILED to execute End-2-End Scenario =================="
     echo
     exit 1
   fi
@@ -125,7 +126,7 @@ commitChaincodeDefinition() {
   # while 'peer chaincode' command can get the orderer endpoint from the
   # peer (if join was successful), let's supply it directly as we know
   # it using the "-o" option
-  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ] ; then
+  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
     peer lifecycle chaincode commit -o localhost:7050 --channelID $CHANNEL_NAME --name informiz $PEER_CONN_PARMS --version ${VERSION} --sequence ${VERSION} --init-required >&log.txt
     res=$?
@@ -185,40 +186,15 @@ chaincodeInvokeInit() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o localhost:7050 -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"init","Args":[]}' >&log.txt
+    peer chaincode invoke -o localhost:7050 -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"initLedger","Args":[]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.informiz.org --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"init","Args":[]}' >&log.txt
+    peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.informiz.org --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"initLedger","Args":[]}' >&log.txt
     res=$?
     set +x
   fi
-  cat log.txt
-  verifyResult $res "Invoke execution on $PEERS failed "
-  echo "===================== Invoke transaction successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
-  echo
-}
-
-chaincodeInvoke() {
-  parsePeerConnectionParameters $@
-  res=$?
-  verifyResult $res "Invoke transaction failed on channel '$CHANNEL_NAME' due to uneven number of peer and org parameters "
-
-  # while 'peer chaincode' command can get the orderer endpoint from the
-  # peer (if join was successful), let's supply it directly as we know
-  # it using the "-o" option
-  if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
-    set -x
-    peer chaincode invoke -o localhost:7050 -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS  -c '{"function":"initLedger","Args":[]}' >&log.txt
-    res=$?
-    set +x
-  else
-    set -x
-    peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.informiz.org --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS -c '{"function":"initLedger","Args":[]}' >&log.txt
-    res=$?
-    set +x
-	fi
   cat log.txt
   verifyResult $res "Invoke execution on $PEERS failed "
   echo "===================== Invoke transaction successful on $PEERS on channel '$CHANNEL_NAME' ===================== "
@@ -237,7 +213,7 @@ chaincodeQuery() {
     sleep $DELAY
     echo "Attempting to Query peer0.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n informiz -c '{"Args":["queryAllFactCheckers"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n informiz -c '{"Args":["queryAllCars"]}' >&log.txt
     res=$?
     set +x
 		let rc=$res
@@ -291,14 +267,10 @@ queryCommitted 1
 queryCommitted 2
 
 
-# TODO: uncomment to test the iz chaincode
 ## Invoke the chaincode
 chaincodeInvokeInit 1 2
 
-# sleep 10
-
-## Invoke the chaincode
-# chaincodeInvoke 1 2
+sleep 10
 
 # Query chaincode on peer0.org1
 echo "Querying chaincode on peer0.org1..."

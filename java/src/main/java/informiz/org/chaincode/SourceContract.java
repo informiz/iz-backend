@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
 import org.hyperledger.fabric.contract.annotation.*;
+import org.hyperledger.fabric.shim.Chaincode;
 import org.hyperledger.fabric.shim.ChaincodeException;
 import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.ledger.KeyValue;
@@ -16,6 +17,8 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIteratorWithMetadata;
 
 import java.io.IOException;
 import java.util.function.Consumer;
+
+import static org.hyperledger.fabric.shim.ResponseUtils.newSuccessResponse;
 
 /**
  * Java implementation of the Source Contract. The record contains:
@@ -26,6 +29,7 @@ import java.util.function.Consumer;
  * It is expected that any additional metadata about the source will be stored on an external CMS (e.g SQL database).
  * The sid should be used as a reference key.
  */
+@Default
 @Contract(
         name = "SourceContract",
         info = @Info(
@@ -47,6 +51,18 @@ public class SourceContract implements ContractInterface {
     public enum SourceErrors {
         SOURCE_NOT_FOUND,
         SOURCE_ALREADY_EXISTS
+    }
+
+    /**
+     * Init is called when initializing or updating chaincode. Use this to set
+     * initial world state
+     *
+     * @param ctx
+     * @return Response with message and payload
+     */
+    @Transaction
+    public Chaincode.Response init(Context ctx) {
+        return newSuccessResponse();
     }
 
     /**
