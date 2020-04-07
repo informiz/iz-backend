@@ -10,9 +10,16 @@ VERBOSE="$5"
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
 
-# TODO: mvn clean package
-CC_SRC_PATH="../../fabric-samples/chaincode/fabcar/java/build/install/fabcar"
-# CC_SRC_PATH="../java/target/build/install/informiz"
+echo Compiling Java code ...
+pushd ../java
+mvn clean package
+if [[ "$?" -ne 0 ]] ; then
+  echo 'Failed to build chaincode'; exit $rc
+fi
+popd
+echo Finished compiling Java code
+
+CC_SRC_PATH="../java/target/build/install/informiz"
 FABRIC_CFG_PATH="$PWD/../config"
 
 # import utils
@@ -186,12 +193,12 @@ chaincodeInvokeInit() {
   # it using the "-o" option
   if [ -z "$CORE_PEER_TLS_ENABLED" -o "$CORE_PEER_TLS_ENABLED" = "false" ]; then
     set -x
-    peer chaincode invoke -o localhost:7050 -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"initLedger","Args":[]}' >&log.txt
+    peer chaincode invoke -o localhost:7050 -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"init","Args":[]}' >&log.txt
     res=$?
     set +x
   else
     set -x
-    peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.informiz.org --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"initLedger","Args":[]}' >&log.txt
+    peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.informiz.org --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n informiz $PEER_CONN_PARMS --isInit -c '{"function":"init","Args":[]}' >&log.txt
     res=$?
     set +x
   fi
@@ -213,7 +220,7 @@ chaincodeQuery() {
     sleep $DELAY
     echo "Attempting to Query peer0.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n informiz -c '{"Args":["queryAllCars"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n informiz -c '{"Args":["queryAllSources", "50", ""]}' >&log.txt
     res=$?
     set +x
 		let rc=$res
@@ -276,4 +283,5 @@ sleep 10
 echo "Querying chaincode on peer0.org1..."
 chaincodeQuery 1
 
+echo "Done verifying deployment"
 exit 0

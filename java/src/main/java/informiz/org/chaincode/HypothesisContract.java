@@ -40,8 +40,7 @@ import java.util.function.Function;
                         email = "support@informiz.org",
                         name = "Informiz Support Team",
                         url = "https://informiz.org")))
-@Default
-public class HypothesisContract implements ContractInterface {
+public final class HypothesisContract implements ContractInterface {
 
     private static ObjectMapper mapper = new ObjectMapper();
 

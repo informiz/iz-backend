@@ -41,8 +41,7 @@ import java.util.function.Function;
                         email = "support@informiz.org",
                         name = "Informiz Support Team",
                         url = "https://informiz.org")))
-
-public class ReferenceTextContract implements ContractInterface {
+public final class ReferenceTextContract implements ContractInterface {
 
     private static ObjectMapper mapper = new ObjectMapper();
 

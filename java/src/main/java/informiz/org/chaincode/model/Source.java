@@ -17,7 +17,7 @@ import java.util.Map;
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @DataType()
-public class Source {
+public final class Source {
 
     @Property()
     private String sid;

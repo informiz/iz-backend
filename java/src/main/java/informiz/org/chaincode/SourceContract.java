@@ -3,13 +3,12 @@ package informiz.org.chaincode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informiz.org.chaincode.model.PaginatedResults;
-import informiz.org.chaincode.model.Source;
 import informiz.org.chaincode.model.Score;
+import informiz.org.chaincode.model.Source;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
 import org.hyperledger.fabric.contract.annotation.*;
-import org.hyperledger.fabric.shim.Chaincode;
 import org.hyperledger.fabric.shim.ChaincodeException;
 import org.hyperledger.fabric.shim.ChaincodeStub;
 import org.hyperledger.fabric.shim.ledger.KeyValue;
@@ -17,8 +16,6 @@ import org.hyperledger.fabric.shim.ledger.QueryResultsIteratorWithMetadata;
 
 import java.io.IOException;
 import java.util.function.Consumer;
-
-import static org.hyperledger.fabric.shim.ResponseUtils.newSuccessResponse;
 
 /**
  * Java implementation of the Source Contract. The record contains:
@@ -44,7 +41,7 @@ import static org.hyperledger.fabric.shim.ResponseUtils.newSuccessResponse;
                         name = "Informiz Support Team",
                         url = "https://informiz.org")))
 
-public class SourceContract implements ContractInterface {
+public final class SourceContract implements ContractInterface {
 
     private static ObjectMapper mapper = new ObjectMapper();
 
@@ -61,9 +58,7 @@ public class SourceContract implements ContractInterface {
      * @return Response with message and payload
      */
     @Transaction
-    public Chaincode.Response init(Context ctx) {
-        return newSuccessResponse();
-    }
+    public void init(final Context ctx) {}
 
     /**
      * Retrieves a source with the specified key (sid) from the ledger.
@@ -87,17 +82,22 @@ public class SourceContract implements ContractInterface {
      * can be used as a value to the bookmark argument.
      *
      * @param ctx the transaction context
-     * @param pageSize the page size
+     * @param pageSize the page size TODO: should be int
      * @param bookmark the bookmark
      * @return the source found on the ledger if there was one
      */
     @Transaction()
-    public PaginatedResults queryAllSources(final Context ctx, final int pageSize, final String bookmark) {
+    public String queryAllSources(final Context ctx, final String pageSize, final String bookmark) {
         ChaincodeStub stub = ctx.getStub();
         QueryResultsIteratorWithMetadata<KeyValue> states =
-                stub.getStateByRangeWithPagination("", "", pageSize, bookmark);
+                stub.getStateByRangeWithPagination("", "", Integer.valueOf(pageSize), bookmark);
 
-        return new PaginatedResults(states);
+        try {
+            return mapper.writeValueAsString(new PaginatedResults(states));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize query result", e);
+        }
+
     }
 
     /**

@@ -18,12 +18,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class SourceContractTest {
 
@@ -127,10 +129,16 @@ public class SourceContractTest {
                 { metadata.getFetchedRecordsCount(); result = numSources; }
                 { metadata.getBookmark(); result = bookmark;}
                 { states.getMetadata(); result = metadata; }
-                { states.iterator(); result = resList.iterator(); }
+                { states.iterator(); result = resList.iterator(); minTimes = 0;}
             };
-
-            PaginatedResults result = contract.queryAllSources(ctx, 100, "");
+            ObjectMapper mapper = new ObjectMapper();
+            PaginatedResults result = null;
+            try {
+                result = mapper.readValue(contract.queryAllSources(ctx, "100", ""),
+                        PaginatedResults.class);
+            } catch (IOException e) {
+                fail(e);
+            }
             assertEquals(bookmark, result.getBookmark());
             assertEquals(numSources, result.getResults().size());
         }

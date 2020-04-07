@@ -37,8 +37,7 @@ import java.util.function.Consumer;
                         email = "support@informiz.org",
                         name = "Informiz Support Team",
                         url = "https://informiz.org")))
-
-public class FactCheckerContract implements ContractInterface {
+public final class FactCheckerContract implements ContractInterface {
 
     private static ObjectMapper mapper = new ObjectMapper();
 

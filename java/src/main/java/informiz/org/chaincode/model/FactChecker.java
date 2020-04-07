@@ -13,7 +13,7 @@ import org.hyperledger.fabric.contract.annotation.Property;
  */
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
 @DataType()
-public class FactChecker {
+public final class FactChecker {
 
     @Property()
     private String fcid;
