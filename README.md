@@ -1,20 +1,29 @@
 # The informiz.org Chaincode
-## Chaincode For The informiz.org [Hyperledger Fabric](https://www.ibm.com/blockchain/hyperledger "IBM") Network
-This repository contain the smart-contracts and data-types used by informiz.org. It defines transactions for managing 
+## Chaincode For The informiz.org [Hyperledger Fabric](https://www.ibm.com/blockchain/hyperledger "IBM HLF") Network
+
+This repository contains the smart-contracts and data-types used by informiz.org. It defines transactions for managing 
 fact-checkers, sources (e.g "The NASA official website"), hypothesises (factual claims) and texts (textual references).
 
-### Setting up Hyperledger Fabric
-You can use the IBM documentation to set up HF. 
-First install the [prerequisites](https://hyperledger-fabric.readthedocs.io/en/latest/prereqs.html). Note that you will 
-need docker and docker-compose, Go, Node.js and npm, and Python 2.7.
-Next you can use the provided script in order to install the necessary binaries and images, as described in the 
-[documentation](https://hyperledger-fabric.readthedocs.io/en/latest/install.html). You do this by executing the 
-following command from the project's home directory:
+### Setting up a Hyperledger Fabric network
 
-`curl -sSL https://bit.ly/2ysbOFE | bash -s -- -s`
+Follow The instructions in the `test-network/README.md` file to set up a network and install the chaincode.
 
-(The trailing `-s` excludes cloning the fabric-samples repository)
+### Using the network
+Set the following environment variables for invoking the network as e.g admin of org-1 (note that the paths are relative 
+to the created `<project home dir>/tmp/` directory)):
 
-### Installing the application
-#### Starting the network
+export FABRIC_CFG_PATH=$PWD/../config
+export PATH=${PWD}/../bin:${PWD}:$PATH
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID="Org1MSP"
+export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org.nasa.com/peers/peer0.org.nasa.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org.nasa.com/users/Admin@org.nasa.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+
+You can then execute HLF commands, e.g:
+
+`peer chaincode query -C mychannel -n informiz -c '{"Args":["queryAllSources", "50", ""]}'`.
+
+
+
  

@@ -20,14 +20,3 @@ if [[ ! -v _ANOTHER_ORG_ ]]; then
 fi
 
 echo "Done preparing network"
-
-
-# Example config for invoking the network as admin of org-1 (executed from the tmp/ directory)):
-
-# export FABRIC_CFG_PATH=$PWD/../config
-# export PATH=${PWD}/../bin:${PWD}:$PATH
-# export CORE_PEER_TLS_ENABLED=true
-# export CORE_PEER_LOCALMSPID="Org1MSP"
-# export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org.nasa.com/peers/peer0.org.nasa.com/tls/ca.crt
-# export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org.nasa.com/users/Admin@org.nasa.com/msp
-# export CORE_PEER_ADDRESS=localhost:7051
