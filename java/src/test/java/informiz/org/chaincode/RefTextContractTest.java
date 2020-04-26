@@ -67,7 +67,7 @@ public class RefTextContractTest {
         public void whenReferenceTextExists() {
             new Expectations() { { ctx.getStub(); result = stub; } };
             ReferenceText created = contract.createReferenceText(ctx, text.getText(), text.getSid(),
-                    text.getLink(), text.getLocale());
+                    text.getLink(), text.getLocale().toString());
             assertTrue(text.equals(created));
         }
 
@@ -75,7 +75,7 @@ public class RefTextContractTest {
         public void whenReferenceTextDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } };
             ReferenceText created = contract.createReferenceText(ctx, text.getText(), text.getSid(),
-                    text.getLink(), text.getLocale());
+                    text.getLink(), text.getLocale().toString());
             assertTrue(text.equals(created)); // ReferenceText's 'equals' method only considers text id
             assertEquals(text.getText(), created.getText());
             assertEquals(text.getSid(), created.getSid());
@@ -135,10 +135,10 @@ public class RefTextContractTest {
                 { metadata.getFetchedRecordsCount(); result = numReferenceText; }
                 { metadata.getBookmark(); result = bookmark;}
                 { states.getMetadata(); result = metadata; }
-                { states.iterator(); result = resList.iterator(); }
+                { states.iterator(); result = resList.iterator(); minTimes = 0;}
             };
 
-            PaginatedResults result = contract.queryAllReferenceTexts(ctx, 100, "");
+            PaginatedResults result = contract.queryAllReferenceTexts(ctx, "100", "");
             assertEquals(bookmark, result.getBookmark());
             assertEquals(numReferenceText, result.getResults().size());
         }
@@ -152,7 +152,7 @@ public class RefTextContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(text.getTid());
                 result = textJson; }};
 
-            ReferenceText updated = contract.updateReferenceTextScore(ctx, text.getTid(), 0.95f, 0.97f);
+            ReferenceText updated = contract.updateReferenceTextScore(ctx, text.getTid(), "0.95", "0.97");
             assertEquals(0.95f, updated.getScore().getReliability().floatValue());
             assertEquals(0.97f, updated.getScore().getConfidence().floatValue());
         }
@@ -161,7 +161,7 @@ public class RefTextContractTest {
         public void whenReferenceTextDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(text.getTid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateReferenceTextScore(ctx, text.getTid(), 0.95f, 0.97f));
+                    contract.updateReferenceTextScore(ctx, text.getTid(), "0.95", "0.97"));
         }
     }
 
@@ -213,7 +213,7 @@ public class RefTextContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(text.getTid());
                 result = textJson; }};
 
-            ReferenceText updated = contract.updateReferenceTextLocale(ctx, text.getTid(), Locale.CANADA_FRENCH);
+            ReferenceText updated = contract.updateReferenceTextLocale(ctx, text.getTid(), Locale.CANADA_FRENCH.toString());
             assertEquals(Locale.CANADA_FRENCH, updated.getLocale());
         }
 
@@ -221,7 +221,7 @@ public class RefTextContractTest {
         public void whenReferenceTextDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(text.getTid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateReferenceTextScore(ctx, text.getTid(), 0.95f, 0.97f));
+                    contract.updateReferenceTextScore(ctx, text.getTid(), "0.95", "0.97"));
         }
     }
 
@@ -233,7 +233,7 @@ public class RefTextContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(text.getTid());
                 result = textJson; }};
 
-            ReferenceText updated = contract.addOrUpdateReview(ctx, text.getTid(), "factChecker1", 0.96f);
+            ReferenceText updated = contract.addOrUpdateReview(ctx, text.getTid(), "factChecker1", "0.96");
             assertEquals(1, updated.getReviews().size());
             assertEquals(0.96f, updated.getReviews().get("factChecker1").floatValue());
 
@@ -245,7 +245,7 @@ public class RefTextContractTest {
         public void whenReferenceTextDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(text.getTid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.addOrUpdateReview(ctx, text.getTid(), "factChecker1", 0.96f));
+                    contract.addOrUpdateReview(ctx, text.getTid(), "factChecker1", "0.96"));
         }
     }
 }

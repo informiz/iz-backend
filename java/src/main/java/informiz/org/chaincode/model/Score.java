@@ -16,6 +16,9 @@ public class Score {
     }
 
     public Score(float reliability, float confidence) {
+        // TODO: test score out-of-bound values
+        assert reliability > 0.0 && reliability < 1.0;
+        assert confidence > 0.0 && confidence < 1.0;
         setReliability(reliability);
         setConfidence(confidence);
     }

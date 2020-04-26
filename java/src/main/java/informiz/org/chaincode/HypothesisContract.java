@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informiz.org.chaincode.model.Hypothesis;
 import informiz.org.chaincode.model.PaginatedResults;
-import informiz.org.chaincode.model.Score;
+import informiz.org.chaincode.model.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
@@ -50,6 +50,17 @@ public final class HypothesisContract implements ContractInterface {
     }
 
     /**
+     * Init is called when initializing or updating chaincode. Use this to set
+     * initial world state
+     * TODO: Can init/recover with non-empty couchDB? Otherwise - can parallelize without overloading HLF?
+     *
+     * @param ctx
+     * @return Response with message and payload
+     */
+    @Transaction
+    public void init(final Context ctx) {}
+
+    /**
      * Retrieves a hypothesis with the specified key (hid) from the ledger.
      *
      * @param ctx the transaction context
@@ -81,14 +92,15 @@ public final class HypothesisContract implements ContractInterface {
      *
      * @param ctx the transaction context
      * @param claim the claim
-     * @param locale the locale of the claim
+     * @param locale the locale of the claim, in standard string form, e.g 'en_US'
      * @return the created Hypothesis
      */
     @Transaction()
-    public Hypothesis createHypothesis(final Context ctx, final String claim, final Locale locale) {
+    public Hypothesis createHypothesis(final Context ctx, final String claim, final String locale) {
+        Locale l =  Utils.localeFromString(locale);
         ChaincodeStub stub = ctx.getStub();
 
-        Hypothesis hypothesis = Hypothesis.createHypothesis(claim, locale);
+        Hypothesis hypothesis = Hypothesis.createHypothesis(claim, l);
         try {
             String hypothesisState = mapper.writeValueAsString(hypothesis);
             stub.putStringState(hypothesis.getHid(), hypothesisState);
@@ -107,15 +119,16 @@ public final class HypothesisContract implements ContractInterface {
      * can be used as a value to the bookmark argument.
      *
      * @param ctx the transaction context
-     * @param pageSize the page size
+     * @param pageSize the page size, as a string. Size is limited to 10-100 items per page
      * @param bookmark the bookmark
      * @return a page of hypothesiss found on the ledger, in json format, starting from the given bookmark
      */
     @Transaction()
-    public PaginatedResults queryAllHypothesis(final Context ctx, final int pageSize, final String bookmark) {
+    public PaginatedResults queryAllHypothesis(final Context ctx, final String pageSize, final String bookmark) {
+        int size = Utils.pageSizeFromString(pageSize);
         ChaincodeStub stub = ctx.getStub();
         QueryResultsIteratorWithMetadata<KeyValue> states =
-                stub.getStateByRangeWithPagination("", "", pageSize, bookmark);
+                stub.getStateByRangeWithPagination("", "", size, bookmark);
 
         return new PaginatedResults(states);
     }
@@ -130,9 +143,10 @@ public final class HypothesisContract implements ContractInterface {
      * @return the updated Hypothesis
      */
     @Transaction()
-    public Hypothesis updateHypothesisScore(final Context ctx, final String hid, float reliability, float confidence) {
+    public Hypothesis updateHypothesisScore(final Context ctx, final String hid,
+                                            final String reliability, final String confidence) {
         Function<Hypothesis, Hypothesis> updateScore = (hypothesis) -> {
-            hypothesis.setScore(new Score(reliability, confidence));; return hypothesis;
+            hypothesis.setScore(Utils.createScore(reliability, confidence));; return hypothesis;
         };
         return updateHypothesis(ctx, hid, updateScore);
     }
@@ -142,13 +156,13 @@ public final class HypothesisContract implements ContractInterface {
      *
      * @param ctx the transaction context
      * @param hid the hypothesis id (its key on the ledger)
-     * @param locale the new locale
+     * @param locale the new locale, in standard string form, e.g 'en_US'
      * @return the updated Hypothesis
      */
     @Transaction()
-    public Hypothesis updateHypothesisLocale(final Context ctx, final String hid, Locale locale) {
+    public Hypothesis updateHypothesisLocale(final Context ctx, final String hid, final String locale) {
         Function<Hypothesis, Hypothesis> updateLocale = (hypothesis) -> {
-            hypothesis.setLocale(locale); return hypothesis;
+            hypothesis.setLocale(Utils.localeFromString(locale)); return hypothesis;
         };
         return updateHypothesis(ctx, hid, updateLocale);
     }
@@ -163,9 +177,10 @@ public final class HypothesisContract implements ContractInterface {
      * @return the updated Hypothesis
      */
     @Transaction()
-    public Hypothesis addOrUpdateReview(final Context ctx, final String hid, String fcid, float reliability) {
+    public Hypothesis addOrUpdateReview(final Context ctx, final String hid, String fcid,
+                                        final String reliability) {
         Function<Hypothesis, Hypothesis> addRefTextReview = (hypothesis) -> {
-            hypothesis.addReview(fcid, reliability); return hypothesis;
+            hypothesis.addReview(fcid, Utils.reliabilityFromString(reliability)); return hypothesis;
         };
         return updateHypothesis(ctx, hid, addRefTextReview);
     }
@@ -225,8 +240,8 @@ public final class HypothesisContract implements ContractInterface {
      * @param updateFunc an update function to execute on the hypothesis
      * @return the updated hypothesis
      */
-    private Hypothesis updateHypothesis(Context ctx, String hid,
-                                              Function<Hypothesis, Hypothesis> updateFunc) {
+    private Hypothesis updateHypothesis(final Context ctx, final String hid,
+                                        final Function<Hypothesis, Hypothesis> updateFunc) {
         ChaincodeStub stub = ctx.getStub();
 
         String hypothesisState = stub.getStringState(hid);

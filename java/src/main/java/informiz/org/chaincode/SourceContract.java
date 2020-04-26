@@ -3,8 +3,8 @@ package informiz.org.chaincode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informiz.org.chaincode.model.PaginatedResults;
-import informiz.org.chaincode.model.Score;
 import informiz.org.chaincode.model.Source;
+import informiz.org.chaincode.model.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
@@ -53,6 +53,7 @@ public final class SourceContract implements ContractInterface {
     /**
      * Init is called when initializing or updating chaincode. Use this to set
      * initial world state
+     * TODO: Can init/recover with non-empty couchDB? Otherwise - can parallelize without overloading HLF?
      *
      * @param ctx
      * @return Response with message and payload
@@ -110,10 +111,10 @@ public final class SourceContract implements ContractInterface {
      * @return the created Source
      */
     @Transaction()
-    public Source createSource(final Context ctx, String name, float reliability, float confidence) {
+    public Source createSource(final Context ctx, final String name, final String reliability, final String confidence) {
         ChaincodeStub stub = ctx.getStub();
 
-        Source source = Source.createSource(name, reliability, confidence);
+        Source source = Source.createSource(name, Utils.createScore(reliability, confidence));
         try {
             String srcState = mapper.writeValueAsString(source);
             stub.putStringState(source.getSid(), srcState);
@@ -179,10 +180,10 @@ public final class SourceContract implements ContractInterface {
      * @return the updated Source
      */
     @Transaction()
-    public Source updateSourceScore(final Context ctx, final String sid, float reliability, float confidence) {
+    public Source updateSourceScore(final Context ctx, final String sid, final String reliability, final String confidence) {
         ChaincodeStub stub = ctx.getStub();
 
-        return updateSource(sid, stub, src -> src.setScore(new Score(reliability, confidence)));
+        return updateSource(sid, stub, src -> src.setScore(Utils.createScore(reliability, confidence)));
     }
 
     /**
@@ -192,7 +193,7 @@ public final class SourceContract implements ContractInterface {
      * @param updateFunc a consumer function for updating the source
      * @return the updated source
      */
-    private Source updateSource(String sid, ChaincodeStub stub, Consumer<Source> updateFunc) {
+    private Source updateSource(final String sid, final ChaincodeStub stub, final Consumer<Source> updateFunc) {
         String srcState = stub.getStringState(sid);
 
         if (StringUtils.isBlank(srcState)) {

@@ -65,14 +65,16 @@ public class SourceContractTest {
         @Test
         public void whenSourceExists() {
             new Expectations() { { ctx.getStub(); result = stub; } };
-            Source created = contract.createSource(ctx, src.getName(), src.getScore().getReliability(), src.getScore().getConfidence());
+            Source created = contract.createSource(ctx, src.getName(),
+                    String.valueOf(src.getScore().getReliability()), String.valueOf(src.getScore().getConfidence()));
             assertTrue(src.equals(created));
         }
 
         @Test
         public void whenSourceDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } };
-            Source created = contract.createSource(ctx, src.getName(), src.getScore().getReliability(), src.getScore().getConfidence());
+            Source created = contract.createSource(ctx, src.getName(),
+                    String.valueOf(src.getScore().getReliability()), String.valueOf(src.getScore().getConfidence()));
             assertTrue(src.equals(created)); // Source's 'equals' method only considers source id
             assertTrue(src.getScore().equals(created.getScore()));
             assertEquals(src.getName(), created.getName());
@@ -172,7 +174,7 @@ public class SourceContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(src.getSid());
                 result = srcJson; }};
 
-            Source updated = contract.updateSourceScore(ctx, src.getSid(), 0.95f, 0.97f);
+            Source updated = contract.updateSourceScore(ctx, src.getSid(), "0.95", "0.97");
             assertEquals(0.95f, updated.getScore().getReliability().floatValue());
             assertEquals(0.97f, updated.getScore().getConfidence().floatValue());
         }
@@ -181,7 +183,7 @@ public class SourceContractTest {
         public void whenSourceDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(src.getSid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateSourceScore(ctx, src.getSid(), 0.95f, 0.97f));
+                    contract.updateSourceScore(ctx, src.getSid(), "0.95", "0.97"));
         }
     }
 

@@ -63,14 +63,14 @@ public class HypothesisContractTest {
         @Test
         public void whenHypothesisExists() {
             new Expectations() { { ctx.getStub(); result = stub; } };
-            Hypothesis created = contract.createHypothesis(ctx, hypothesis.getClaim(), hypothesis.getLocale());
+            Hypothesis created = contract.createHypothesis(ctx, hypothesis.getClaim(), hypothesis.getLocale().toString());
             assertTrue(hypothesis.equals(created));
         }
 
         @Test
         public void whenHypothesisDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } };
-            Hypothesis created = contract.createHypothesis(ctx, hypothesis.getClaim(), hypothesis.getLocale());
+            Hypothesis created = contract.createHypothesis(ctx, hypothesis.getClaim(), hypothesis.getLocale().toString());
             assertTrue(hypothesis.equals(created)); // Hypothesis's 'equals' method only considers hypothesise id
             assertTrue(hypothesis.getScore().equals(created.getScore()));
             assertEquals(hypothesis.getClaim(), created.getClaim());
@@ -127,10 +127,10 @@ public class HypothesisContractTest {
                 { metadata.getFetchedRecordsCount(); result = numHypothesis; }
                 { metadata.getBookmark(); result = bookmark;}
                 { states.getMetadata(); result = metadata; }
-                { states.iterator(); result = resList.iterator(); }
+                { states.iterator(); result = resList.iterator(); minTimes = 0;}
             };
 
-            PaginatedResults result = contract.queryAllHypothesis(ctx, 100, "");
+            PaginatedResults result = contract.queryAllHypothesis(ctx, "100", "");
             assertEquals(bookmark, result.getBookmark());
             assertEquals(numHypothesis, result.getResults().size());
         }
@@ -144,7 +144,7 @@ public class HypothesisContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(hypothesis.getHid());
                 result = hypothesisJson; }};
 
-            Hypothesis updated = contract.updateHypothesisScore(ctx, hypothesis.getHid(), 0.95f, 0.97f);
+            Hypothesis updated = contract.updateHypothesisScore(ctx, hypothesis.getHid(), "0.95", "0.97");
             assertEquals(0.95f, updated.getScore().getReliability().floatValue());
             assertEquals(0.97f, updated.getScore().getConfidence().floatValue());
         }
@@ -153,7 +153,7 @@ public class HypothesisContractTest {
         public void whenHypothesisDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(hypothesis.getHid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateHypothesisScore(ctx, hypothesis.getHid(), 0.95f, 0.97f));
+                    contract.updateHypothesisScore(ctx, hypothesis.getHid(), "0.95", "0.97"));
         }
     }
 
@@ -165,7 +165,7 @@ public class HypothesisContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(hypothesis.getHid());
                 result = hypothesisJson; }};
 
-            Hypothesis updated = contract.updateHypothesisLocale(ctx, hypothesis.getHid(), Locale.CANADA_FRENCH);
+            Hypothesis updated = contract.updateHypothesisLocale(ctx, hypothesis.getHid(), Locale.CANADA_FRENCH.toString());
             assertEquals(Locale.CANADA_FRENCH, updated.getLocale());
         }
 
@@ -173,7 +173,7 @@ public class HypothesisContractTest {
         public void whenHypothesisDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(hypothesis.getHid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateHypothesisScore(ctx, hypothesis.getHid(), 0.95f, 0.97f));
+                    contract.updateHypothesisScore(ctx, hypothesis.getHid(), "0.95", "0.97"));
         }
     }
 
@@ -185,7 +185,7 @@ public class HypothesisContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(hypothesis.getHid());
                 result = hypothesisJson; }};
 
-            Hypothesis updated = contract.addOrUpdateReview(ctx, hypothesis.getHid(), "factChecker1", 0.96f);
+            Hypothesis updated = contract.addOrUpdateReview(ctx, hypothesis.getHid(), "factChecker1", "0.96");
             assertEquals(1, updated.getReviews().size());
             assertEquals(0.96f, updated.getReviews().get("factChecker1").floatValue());
 
@@ -197,7 +197,7 @@ public class HypothesisContractTest {
         public void whenHypothesisDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(hypothesis.getHid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.addOrUpdateReview(ctx, hypothesis.getHid(), "factChecker1", 0.96f));
+                    contract.addOrUpdateReview(ctx, hypothesis.getHid(), "factChecker1", "0.96"));
         }
     }
 

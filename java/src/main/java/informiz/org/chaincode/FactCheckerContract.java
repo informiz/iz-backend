@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informiz.org.chaincode.model.FactChecker;
 import informiz.org.chaincode.model.PaginatedResults;
-import informiz.org.chaincode.model.Score;
+import informiz.org.chaincode.model.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
@@ -47,6 +47,17 @@ public final class FactCheckerContract implements ContractInterface {
     }
 
     /**
+     * Init is called when initializing or updating chaincode. Use this to set
+     * initial world state
+     * TODO: Can init/recover with non-empty couchDB? Otherwise - can parallelize without overloading HLF?
+     *
+     * @param ctx
+     * @return Response with message and payload
+     */
+    @Transaction
+    public void init(final Context ctx) {}
+
+    /**
      * Retrieves a fact-checker with the specified key (fcid) from the ledger.
      *
      * @param ctx the transaction context
@@ -64,18 +75,19 @@ public final class FactCheckerContract implements ContractInterface {
      *
      * @param ctx the transaction context
      * @param name the fact-checker's name
-     * @param reliability the initial reliability
-     * @param confidence the initial confidence
+     * @param reliability the initial reliability, in the range [0.0 - 1.0], as string
+     * @param confidence the initial confidence, in the range [0.0 - 1.0], as string
      * @return the created FactChecker
      */
     @Transaction()
-    public FactChecker createFactChecker(final Context ctx, String name, float reliability, float confidence) {
+    public FactChecker createFactChecker(final Context ctx, final String name,
+                                         final String reliability, final String confidence) {
         ChaincodeStub stub = ctx.getStub();
 
         // TODO: authentication and authorization?
         // ClientIdentity id = ctx.getClientIdentity(); ...
 
-        FactChecker factChecker = FactChecker.createFactChecker(name, reliability, confidence);
+        FactChecker factChecker = FactChecker.createFactChecker(name, Utils.createScore(reliability, confidence));
         try {
             String fcState = mapper.writeValueAsString(factChecker);
             stub.putStringState(factChecker.getFcid(), fcState);
@@ -94,15 +106,16 @@ public final class FactCheckerContract implements ContractInterface {
      * can be used as a value to the bookmark argument.
      *
      * @param ctx the transaction context
-     * @param pageSize the page size
+     * @param pageSize the page size, as a string. Size is limited to 10-100 items per page
      * @param bookmark the bookmark
      * @return a page of fact-checkers found on the ledger, in json format, starting from the given bookmark
      */
     @Transaction()
-    public PaginatedResults queryAllFactCheckers(final Context ctx, final int pageSize, final String bookmark) {
+    public PaginatedResults queryAllFactCheckers(final Context ctx, final String pageSize, final String bookmark) {
         ChaincodeStub stub = ctx.getStub();
+        int size = Utils.pageSizeFromString(pageSize);
         QueryResultsIteratorWithMetadata<KeyValue> states =
-                stub.getStateByRangeWithPagination("", "", pageSize, bookmark);
+                stub.getStateByRangeWithPagination("", "", size, bookmark);
 
         return new PaginatedResults(states);
     }
@@ -133,9 +146,9 @@ public final class FactCheckerContract implements ContractInterface {
      */
     @Transaction()
     public FactChecker updateFactCheckerScore(final Context ctx, final String fcid,
-                                              float reliability, float confidence) {
+                                              final String reliability, final String confidence) {
         ChaincodeStub stub = ctx.getStub();
-        return updateFactChecker(fcid, stub, fc -> fc.setScore(new Score(reliability, confidence)));
+        return updateFactChecker(fcid, stub, fc -> fc.setScore(Utils.createScore(reliability, confidence)));
     }
 
     /**
@@ -145,7 +158,8 @@ public final class FactCheckerContract implements ContractInterface {
      * @param updateFunc a consumer function for updating the fact-checker
      * @return the updated fact-checker
      */
-    private FactChecker updateFactChecker(String fcid, ChaincodeStub stub, Consumer<FactChecker> updateFunc) {
+    private FactChecker updateFactChecker(final String fcid, final ChaincodeStub stub,
+                                          final Consumer<FactChecker> updateFunc) {
         String factCheckerState = stub.getStringState(fcid);
 
         if (StringUtils.isBlank(factCheckerState)) {

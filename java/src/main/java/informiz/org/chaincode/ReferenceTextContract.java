@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import informiz.org.chaincode.model.PaginatedResults;
 import informiz.org.chaincode.model.ReferenceText;
-import informiz.org.chaincode.model.Score;
+import informiz.org.chaincode.model.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.hyperledger.fabric.contract.Context;
 import org.hyperledger.fabric.contract.ContractInterface;
@@ -49,6 +49,17 @@ public final class ReferenceTextContract implements ContractInterface {
         REFERENCE_TEXT_NOT_FOUND,
         REFERENCE_TEXT_ALREADY_EXISTS
     }
+
+    /**
+     * Init is called when initializing or updating chaincode. Use this to set
+     * initial world state
+     * TODO: Can init/recover with non-empty couchDB? Otherwise - can parallelize without overloading HLF?
+     *
+     * @param ctx
+     * @return Response with message and payload
+     */
+    @Transaction
+    public void init(final Context ctx) {}
 
     // TODO: ************************************** TEST CODE, REMOVE THIS!! ******************************************
     /**
@@ -113,15 +124,16 @@ public final class ReferenceTextContract implements ContractInterface {
      * @param ctx the transaction context
      * @param text the text
      * @param sid the id of the source for the text (the source's key on the ledger)
-     * @param locale the locale of the text
+     * @param locale the locale of the text, in standard string form, e.g 'en_US'
      * @return the created ReferenceText
      */
     @Transaction()
     public ReferenceText createReferenceText(final Context ctx, final String text,
-                                             final String sid, final String link, final Locale locale) {
+                                             final String sid, final String link, final String locale) {
+        Locale l =  Utils.localeFromString(locale);
         ChaincodeStub stub = ctx.getStub();
 
-        ReferenceText refText = ReferenceText.createRefText(text, sid, link, locale);
+        ReferenceText refText = ReferenceText.createRefText(text, sid, link, l);
         try {
             String srcState = mapper.writeValueAsString(refText);
             stub.putStringState(refText.getTid(), srcState);
@@ -140,15 +152,16 @@ public final class ReferenceTextContract implements ContractInterface {
      * can be used as a value to the bookmark argument.
      *
      * @param ctx the transaction context
-     * @param pageSize the page size
+     * @param pageSize the page size, as a string. Size is limited to 10-100 items per page
      * @param bookmark the bookmark
      * @return a page of reference-texts found on the ledger, in json format, starting from the given bookmark
      */
     @Transaction()
-    public PaginatedResults queryAllReferenceTexts(final Context ctx, final int pageSize, final String bookmark) {
+    public PaginatedResults queryAllReferenceTexts(final Context ctx, final String pageSize, final String bookmark) {
+        int size = Utils.pageSizeFromString(pageSize);
         ChaincodeStub stub = ctx.getStub();
         QueryResultsIteratorWithMetadata<KeyValue> states =
-                stub.getStateByRangeWithPagination("", "", pageSize, bookmark);
+                stub.getStateByRangeWithPagination("", "", size, bookmark);
 
         return new PaginatedResults(states);
     }
@@ -163,9 +176,10 @@ public final class ReferenceTextContract implements ContractInterface {
      * @return the updated ReferenceText
      */
     @Transaction()
-    public ReferenceText updateReferenceTextScore(final Context ctx, final String tid, float reliability, float confidence) {
+    public ReferenceText updateReferenceTextScore(final Context ctx, final String tid,
+                                                  final String reliability, final String confidence) {
         Function<ReferenceText, ReferenceText> updateScore = (refText) -> {
-            refText.setScore(new Score(reliability, confidence));; return refText;
+            refText.setScore(Utils.createScore(reliability, confidence));; return refText;
         };
         return updateReferenceText(ctx, tid, updateScore);
     }
@@ -179,7 +193,7 @@ public final class ReferenceTextContract implements ContractInterface {
      * @return the updated ReferenceText
      */
     @Transaction()
-    public ReferenceText updateReferenceTextLink(final Context ctx, final String tid, String link) {
+    public ReferenceText updateReferenceTextLink(final Context ctx, final String tid, final String link) {
         Function<ReferenceText, ReferenceText> updateSource = (refText) -> {
             refText.setLink(link); return refText;
         };
@@ -195,7 +209,7 @@ public final class ReferenceTextContract implements ContractInterface {
      * @return the updated ReferenceText
      */
     @Transaction()
-    public ReferenceText updateReferenceTextSource(final Context ctx, final String tid, String sid) {
+    public ReferenceText updateReferenceTextSource(final Context ctx, final String tid, final String sid) {
         Function<ReferenceText, ReferenceText> updateSource = (refText) -> {
             refText.setSid(sid); return refText;
         };
@@ -211,9 +225,9 @@ public final class ReferenceTextContract implements ContractInterface {
      * @return the updated ReferenceText
      */
     @Transaction()
-    public ReferenceText updateReferenceTextLocale(final Context ctx, final String tid, Locale locale) {
+    public ReferenceText updateReferenceTextLocale(final Context ctx, final String tid, final String locale) {
         Function<ReferenceText, ReferenceText> updateLocale = (refText) -> {
-            refText.setLocale(locale); return refText;
+            refText.setLocale(Utils.localeFromString(locale)); return refText;
         };
         return updateReferenceText(ctx, tid, updateLocale);
     }
@@ -228,9 +242,10 @@ public final class ReferenceTextContract implements ContractInterface {
      * @return the updated ReferenceText
      */
     @Transaction()
-    public ReferenceText addOrUpdateReview(final Context ctx, final String tid, String fcid, float reliability) {
+    public ReferenceText addOrUpdateReview(final Context ctx, final String tid, final String fcid,
+                                           final String reliability) {
         Function<ReferenceText, ReferenceText> addRefTextReview = (refText) -> {
-            refText.addReview(fcid, reliability); return refText;
+            refText.addReview(fcid, Utils.reliabilityFromString(reliability)); return refText;
         };
         return updateReferenceText(ctx, tid, addRefTextReview);
     }
@@ -244,7 +259,7 @@ public final class ReferenceTextContract implements ContractInterface {
      * @return the updated ReferenceText
      */
     @Transaction()
-    public ReferenceText removeReview(final Context ctx, final String tid, String fcid) {
+    public ReferenceText removeReview(final Context ctx, final String tid, final String fcid) {
         Function<ReferenceText, ReferenceText> removeRefTextReview = (refText) -> {
             refText.removeReview(fcid); return refText;
         };
@@ -258,8 +273,8 @@ public final class ReferenceTextContract implements ContractInterface {
      * @param updateFunc an update function to execute on the reference-text
      * @return the updated reference-text
      */
-    private ReferenceText updateReferenceText(Context ctx, String tid,
-                                              Function<ReferenceText, ReferenceText> updateFunc) {
+    private ReferenceText updateReferenceText(final Context ctx, final String tid,
+                                              final Function<ReferenceText, ReferenceText> updateFunc) {
         ChaincodeStub stub = ctx.getStub();
 
         String refTextState = stub.getStringState(tid);

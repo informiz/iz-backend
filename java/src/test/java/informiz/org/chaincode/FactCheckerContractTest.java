@@ -63,14 +63,18 @@ public class FactCheckerContractTest {
         @Test
         public void whenFactCheckerExists() {
             new Expectations() { { ctx.getStub(); result = stub; } };
-            FactChecker created = contract.createFactChecker(ctx, factChecker.getName(), factChecker.getScore().getReliability(), factChecker.getScore().getConfidence());
+            FactChecker created = contract.createFactChecker(ctx, factChecker.getName(),
+                    String.valueOf(factChecker.getScore().getReliability()),
+                    String.valueOf(factChecker.getScore().getConfidence()));
             assertTrue(factChecker.equals(created));
         }
 
         @Test
         public void whenFactCheckerDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } };
-            FactChecker created = contract.createFactChecker(ctx, factChecker.getName(), factChecker.getScore().getReliability(), factChecker.getScore().getConfidence());
+            FactChecker created = contract.createFactChecker(ctx, factChecker.getName(),
+                    String.valueOf(factChecker.getScore().getReliability()),
+                    String.valueOf(factChecker.getScore().getConfidence()));
             assertTrue(factChecker.equals(created)); // FactChecker's 'equals' method only considers fact-checker id
             assertTrue(factChecker.getScore().equals(created.getScore()));
             assertEquals(factChecker.getName(), created.getName());
@@ -126,10 +130,10 @@ public class FactCheckerContractTest {
                 { metadata.getFetchedRecordsCount(); result = numFactCheckers; }
                 { metadata.getBookmark(); result = bookmark;}
                 { states.getMetadata(); result = metadata; }
-                { states.iterator(); result = resList.iterator(); }
+                { states.iterator(); result = resList.iterator(); minTimes=0;}
             };
 
-            PaginatedResults result = contract.queryAllFactCheckers(ctx, 100, "");
+            PaginatedResults result = contract.queryAllFactCheckers(ctx, "100", "");
             assertEquals(bookmark, result.getBookmark());
             assertEquals(numFactCheckers, result.getResults().size());
         }
@@ -163,7 +167,7 @@ public class FactCheckerContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid());
                 result = factCheckerJson; }};
 
-            FactChecker updated = contract.updateFactCheckerScore(ctx, factChecker.getFcid(), 0.95f, 0.97f);
+            FactChecker updated = contract.updateFactCheckerScore(ctx, factChecker.getFcid(), "0.95", "0.97");
             assertEquals(0.95f, updated.getScore().getReliability().floatValue());
             assertEquals(0.97f, updated.getScore().getConfidence().floatValue());
         }
@@ -172,7 +176,7 @@ public class FactCheckerContractTest {
         public void whenFactCheckerDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateFactCheckerScore(ctx, factChecker.getFcid(), 0.95f, 0.97f));
+                    contract.updateFactCheckerScore(ctx, factChecker.getFcid(), "0.95", "0.97"));
         }
     }
 }
