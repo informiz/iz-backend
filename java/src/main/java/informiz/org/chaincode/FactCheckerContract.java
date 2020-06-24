@@ -77,17 +77,22 @@ public final class FactCheckerContract implements ContractInterface {
      * @param name the fact-checker's name
      * @param reliability the initial reliability, in the range [0.0 - 1.0], as string
      * @param confidence the initial confidence, in the range [0.0 - 1.0], as string
+     * @param email the fact-checker's email address
+     * @param link a link to the fact-checker's personal profile
      * @return the created FactChecker
      */
     @Transaction()
     public FactChecker createFactChecker(final Context ctx, final String name,
-                                         final String reliability, final String confidence) {
+                                         final String reliability, final String confidence,
+                                         final String email, final String link) {
         ChaincodeStub stub = ctx.getStub();
 
         // TODO: authentication and authorization?
         // ClientIdentity id = ctx.getClientIdentity(); ...
 
         FactChecker factChecker = FactChecker.createFactChecker(name, Utils.createScore(reliability, confidence));
+        factChecker.setEmail(email);
+        factChecker.setLink(link);
         try {
             String fcState = mapper.writeValueAsString(factChecker);
             stub.putStringState(factChecker.getFcid(), fcState);
@@ -149,6 +154,72 @@ public final class FactCheckerContract implements ContractInterface {
                                               final String reliability, final String confidence) {
         ChaincodeStub stub = ctx.getStub();
         return updateFactChecker(fcid, stub, fc -> fc.setScore(Utils.createScore(reliability, confidence)));
+    }
+
+    /**
+     * Changes the email address of a fact-checker on the ledger.
+     *
+     * @param ctx the transaction context
+     * @param fcid the key associated with the fact-checker on the ledger
+     * @param email the new email address
+     * @return the updated FactChecker
+     */
+    @Transaction()
+    public FactChecker updateFactCheckerEmail(final Context ctx, final String fcid, final String email) {
+        ChaincodeStub stub = ctx.getStub();
+
+        return updateFactChecker(fcid, stub, fc -> fc.setEmail(email));
+    }
+
+
+    /**
+     * Changes the personal-profile link of a fact-checker on the ledger.
+     *
+     * @param ctx the transaction context
+     * @param fcid the key associated with the fact-checker on the ledger
+     * @param link the new personal-profile link
+     * @return the updated FactChecker
+     */
+    @Transaction()
+    public FactChecker updateFactCheckerLink(final Context ctx, final String fcid, final String link) {
+        ChaincodeStub stub = ctx.getStub();
+
+        return updateFactChecker(fcid, stub, fc -> fc.setLink(link));
+    }
+
+    /**
+     * Changes the personal-profile link of a fact-checker on the ledger.
+     *
+     * @param ctx the transaction context
+     * @param fcid the key associated with the fact-checker on the ledger
+     * @param jsonStr the json representation of the updated fact-checker
+     * @return the updated FactChecker
+     */
+    @Transaction()
+    public FactChecker updateFactCheckerInfo(final Context ctx, final String fcid, final String jsonStr) {
+        ChaincodeStub stub = ctx.getStub();
+        FactChecker updated;
+        try {
+            updated = mapper.readValue(jsonStr, FactChecker.class);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Failed to deserialize facte-checker info", e);
+        }
+
+        return updateFactChecker(fcid, stub, factChecker -> factChecker.updateInfo(updated));
+    }
+
+    /**
+     * Delete a fact-checker (mark it as inactive on the ledger).
+     *
+     * @param ctx the transaction context
+     * @param fcid the key associated with the fact-checker on the ledger
+     * @return the updated FactChecker
+     */
+    @Transaction()
+    public FactChecker deleteFactChecker(final Context ctx, final String fcid) {
+        ChaincodeStub stub = ctx.getStub();
+
+        return updateFactChecker(fcid, stub, fc -> fc.setActive(false));
     }
 
     /**

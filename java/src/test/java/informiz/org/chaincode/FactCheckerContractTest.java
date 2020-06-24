@@ -42,6 +42,8 @@ public class FactCheckerContractTest {
 
     @BeforeAll
     private static void prepareTest() throws JsonProcessingException {
+        factChecker.setEmail("chuck@informiz.org");
+        factChecker.setLink("https://www.linkedin.com/in/chuckfact");
         ObjectMapper mapper = new ObjectMapper();
         factCheckerJson = mapper.writeValueAsString(factChecker);
         // mock the creation of UUIDs to always return the test-fact-checker's id
@@ -65,7 +67,9 @@ public class FactCheckerContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } };
             FactChecker created = contract.createFactChecker(ctx, factChecker.getName(),
                     String.valueOf(factChecker.getScore().getReliability()),
-                    String.valueOf(factChecker.getScore().getConfidence()));
+                    String.valueOf(factChecker.getScore().getConfidence()),
+                    factChecker.getEmail(),
+                    factChecker.getLink());
             assertTrue(factChecker.equals(created));
         }
 
@@ -74,7 +78,9 @@ public class FactCheckerContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } };
             FactChecker created = contract.createFactChecker(ctx, factChecker.getName(),
                     String.valueOf(factChecker.getScore().getReliability()),
-                    String.valueOf(factChecker.getScore().getConfidence()));
+                    String.valueOf(factChecker.getScore().getConfidence()),
+                    factChecker.getEmail(),
+                    factChecker.getLink());
             assertTrue(factChecker.equals(created)); // FactChecker's 'equals' method only considers fact-checker id
             assertTrue(factChecker.getScore().equals(created.getScore()));
             assertEquals(factChecker.getName(), created.getName());
@@ -147,15 +153,15 @@ public class FactCheckerContractTest {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid());
                 result = factCheckerJson; }};
 
-            FactChecker updated = contract.updateFactCheckerName(ctx, factChecker.getFcid(), "www.nasa.gov");
-            assertEquals("www.nasa.gov", updated.getName());
+            FactChecker updated = contract.updateFactCheckerName(ctx, factChecker.getFcid(), "Chuck Fact Jr.");
+            assertEquals("Chuck Fact Jr.", updated.getName());
         }
 
         @Test
         public void whenFactCheckerDoesNotExist() {
             new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid()); result = ""; } };
             Assertions.assertThrows(ChaincodeException.class, () ->
-                    contract.updateFactCheckerName(ctx, factChecker.getFcid(), "www.nasa.gov"));
+                    contract.updateFactCheckerName(ctx, factChecker.getFcid(), "Chuck Fact Jr."));
         }
     }
 
@@ -179,4 +185,65 @@ public class FactCheckerContractTest {
                     contract.updateFactCheckerScore(ctx, factChecker.getFcid(), "0.95", "0.97"));
         }
     }
+
+    @Nested
+    class InvokeUpdateEmailTransaction {
+
+        @Test
+        public void whenFactCheckerExists() {
+            new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid());
+                result = factCheckerJson; }};
+
+            FactChecker updated = contract.updateFactCheckerEmail(ctx, factChecker.getFcid(), "chuck.fact@informiz.org");
+            assertEquals("chuck.fact@informiz.org", updated.getEmail());
+        }
+
+        @Test
+        public void whenFactCheckerDoesNotExist() {
+            new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid()); result = ""; } };
+            Assertions.assertThrows(ChaincodeException.class, () ->
+                    contract.updateFactCheckerEmail(ctx, factChecker.getFcid(), "chuck.fact@informiz.org"));
+        }
+    }
+
+    @Nested
+    class InvokeUpdateLinkTransaction {
+
+        @Test
+        public void whenFactCheckerExists() {
+            new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid());
+                result = factCheckerJson; }};
+
+            FactChecker updated = contract.updateFactCheckerLink(ctx, factChecker.getFcid(), "https://www.facebook.com/chuckfact");
+            assertEquals("https://www.facebook.com/chuckfact", updated.getLink());
+        }
+
+        @Test
+        public void whenFactCheckerDoesNotExist() {
+            new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid()); result = ""; } };
+            Assertions.assertThrows(ChaincodeException.class, () ->
+                    contract.updateFactCheckerLink(ctx, factChecker.getFcid(), "https://www.facebook.com/chuckfact"));
+        }
+    }
+
+    @Nested
+    class InvokeDeleteFactCheckerTransaction {
+
+        @Test
+        public void whenFactCheckerExists() {
+            new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid());
+                result = factCheckerJson; }};
+
+            FactChecker updated = contract.deleteFactChecker(ctx, factChecker.getFcid());
+            assertEquals(false, updated.getActive());
+        }
+
+        @Test
+        public void whenFactCheckerDoesNotExist() {
+            new Expectations() { { ctx.getStub(); result = stub; } { stub.getStringState(factChecker.getFcid()); result = ""; } };
+            Assertions.assertThrows(ChaincodeException.class, () ->
+                    contract.deleteFactChecker(ctx, factChecker.getFcid()));
+        }
+    }
+
 }
